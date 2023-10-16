@@ -17,18 +17,18 @@ CHAT_ID = -1001929072843
 MY_ID = 720116934
 
 
-
-
-@dp.message_handler(commands=['start'])
-async def on_start(message: types.Message):
-    if(message.chat.id == MY_ID):
-        while True:
+async def on_bot_starting(dp):
+    while True:
             all_message = ""
             all_rsi = rsi.get_all_RSI()
             for symbol, nrsi in all_rsi.items():
                 all_message += (f"{symbol} {nrsi}\n")
-            await bot.send_message(chat_id=CHAT_ID, text=all_message)
+            if all_message == "":
+                await bot.send_message(chat_id=CHAT_ID, text="Nothing...")
+            else:
+                 await bot.send_message(chat_id=CHAT_ID, text=all_message)
 
+            
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, on_startup=on_bot_starting, skip_updates=True)
