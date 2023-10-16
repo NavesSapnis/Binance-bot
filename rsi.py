@@ -3,8 +3,9 @@ import pandas as pd
 import ta
 
 
+client = Client()
+
 def get_RSI(token):
-    client = Client()
     interval = Client.KLINE_INTERVAL_15MINUTE
     symbol = token+"USDT"
     klines = client.futures_klines(symbol=symbol, interval=interval)
@@ -38,7 +39,10 @@ def get_all_RSI():
                 
                 last_rsi = round(df["rsi"].iloc[-1], 2)
                 if(last_rsi!=100 and (last_rsi<=25 or last_rsi>=75)):
-                    rsi_data[symbol] = float(last_rsi)
+                    ratios = calculate_volume_ratios(fetch_ohlcv_binance(symbol))
+                    prev_prev_to_current, previous_to_current = ratios
+                    if(prev_prev_to_current < 0.55 or previous_to_current < 0.55):
+                        rsi_data[symbol] = float(last_rsi)
                 else:
                     pass
             except:
@@ -47,4 +51,48 @@ def get_all_RSI():
     return dict(sorted(rsi_data.items(), key=lambda item: item[1]))
 
 
+def fetch_ohlcv_binance(symbol):
 
+    # Получаем текущее время
+    end_time = client.get_server_time()["serverTime"]
+    start_time = end_time - (3 * 15 * 60 * 1000)
+
+    ohlcv = client.futures_klines(symbol=symbol, interval="15m", startTime=start_time, endTime=end_time, limit=3)
+    return ohlcv
+
+
+
+def calculate_volume_ratios(volumes):
+    # Проверка, что у нас есть данные о прошлых объемах
+    if len(volumes) < 3:
+        return None  # Недостаточно данных
+
+    # Получение объемов прошлой, позапрошлой и настоящей свечи
+    current_volume = float(volumes[-1][5])  # Объем текущей свечи
+    previous_volume = float(volumes[-2][5])  # Объем прошлой свечи
+    prev_prev_volume = float(volumes[-3][5])  # Объем позапрошлой свечи
+
+    # Вычисление соотношения позапрошлого объема к настоящему и прошлого к настоящему
+    prev_prev_to_current_ratio = prev_prev_volume / current_volume
+    previous_to_current_ratio = previous_volume / current_volume
+
+    return prev_prev_to_current_ratio, previous_to_current_ratio
+
+# Пример использования
+#volumes = fetch_ohlcv_binance("YGGUSDT")
+#
+#ratios = calculate_volume_ratios(volumes)
+#
+#prev_prev_to_current, previous_to_current = ratios
+#print("Соотношение позапрошлого к настоящему:", prev_prev_to_current)
+#print("Соотношение прошлого к настоящему:", previous_to_current)
+
+
+#symbols = ["YGGUSDT"]
+#volume_data = fetch_volume(symbols)
+#
+#for symbol, data in volume_data.items():
+#    last_volume = data["last_volume"]
+#    previous_volume = data["previous_volume"]
+#    current_volume = data["current_volume"]
+#    print(f"Symbol: {symbol}, Last Volume: {last_volume}, Previous Volume: {previous_volume}, Current Volume: {current_volume}")
