@@ -78,21 +78,4 @@ def calculate_volume_ratios(volumes):
 
     return prev_prev_to_current_ratio, previous_to_current_ratio
 
-# Пример использования
-#volumes = fetch_ohlcv_binance("YGGUSDT")
-#
-#ratios = calculate_volume_ratios(volumes)
-#
-#prev_prev_to_current, previous_to_current = ratios
-#print("Соотношение позапрошлого к настоящему:", prev_prev_to_current)
-#print("Соотношение прошлого к настоящему:", previous_to_current)
-
-
-#symbols = ["YGGUSDT"]
-#volume_data = fetch_volume(symbols)
-#
-#for symbol, data in volume_data.items():
-#    last_volume = data["last_volume"]
-#    previous_volume = data["previous_volume"]
-#    current_volume = data["current_volume"]
-#    print(f"Symbol: {symbol}, Last Volume: {last_volume}, Previous Volume: {previous_volume}, Current Volume: {current_volume}")
+#НЕОБХОДИМО ТЕСТИРОВАНИЕ
